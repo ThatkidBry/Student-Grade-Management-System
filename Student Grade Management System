@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Grade Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    input[type="text"] {
+      width: 120px;
+    }
+    input[type="number"] {
+      width: 50px;
+      text-align: center;
+    }
+    button {
+      padding: 8px 15px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .readonly-calc {
+      background-color: #eef;
+      font-weight: bold;
+    }
+    .status-msg {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Student Grade Management System</h2>
+
+  <table id="gradeTable">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Quiz 1 (10)</th>
+        <th>Quiz 2 (10)</th>
+        <th>Quiz 3 (10)</th>
+        <th>Total Quiz (%)</th>
+        <th>PT1 (50)</th>
+        <th>PT2 (50)</th>
+        <th>PT3 (50)</th>
+        <th>PT4 (50)</th>
+        <th>PT Total (%)</th>
+        <th>Attendance (30)</th>
+        <th>Final Exam (40)</th>
+        <th>Grade (%)</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="studentTableBody">
+      <!-- Student rows will load from LocalStorage or initialize here -->
+    </tbody>
+  </table>
+
+  <button onclick="addStudentRow()">+ Add Student</button>
+  <button onclick="calculateAllGrades()" style="background-color: #4CAF50; color: white; border: none;">Calculate Grades</button>
+  <button onclick="clearLocalStorage()" style="background-color: #ff9800; color: white; border: none;">Clear Saved Data</button>
+
+  <p id="statusMsg" class="status-msg"></p>
+
+  <script>
+    // Load saved data when the page loads
+    window.onload = function() {
+      loadFromLocalStorage();
+    };
+
+    function addStudentRow(data = null) {
+      var tbody = document.getElementById("studentTableBody");
+      var row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td><input type="text" placeholder="Student Name" class="student-name" value="${data ? data.name : ''}" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="q1" value="${data ? data.q1 : 0}" min="0" max="10" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="q2" value="${data ? data.q2 : 0}" min="0" max="10" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="q3" value="${data ? data.q3 : 0}" min="0" max="10" oninput="saveToLocalStorage()"></td>
+        <td class="readonly-calc total-quiz">${data ? data.totalQuiz : '0.00%'}</td>
+        <td><input type="number" class="pt1" value="${data ? data.pt1 : 0}" min="0" max="50" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="pt2" value="${data ? data.pt2 : 0}" min="0" max="50" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="pt3" value="${data ? data.pt3 : 0}" min="0" max="50" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="pt4" value="${data ? data.pt4 : 0}" min="0" max="50" oninput="saveToLocalStorage()"></td>
+        <td class="readonly-calc pt-total">${data ? data.ptTotal : '0.00%'}</td>
+        <td><input type="number" class="attendance" value="${data ? data.attendance : 0}" min="0" max="30" oninput="saveToLocalStorage()"></td>
+        <td><input type="number" class="final-exam" value="${data ? data.finalExam : 0}" min="0" max="40" oninput="saveToLocalStorage()"></td>
+        <td class="readonly-calc final-grade">${data ? data.finalGrade : '0.00%'}</td>
+        <td><button onclick="deleteRow(this)" style="background-color: #f44336; color: white; border: none;">Delete</button></td>
+      `;
+
+      tbody.appendChild(row);
+      if (!data) saveToLocalStorage();
+    }
+
+    function deleteRow(btn) {
+      var row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+      saveToLocalStorage();
+    }
+
+    function calculateAllGrades() {
+      var rows = document.querySelectorAll("#studentTableBody tr");
+
+      rows.forEach(function(row) {
+        // 1. Quizzes: Add all 3 quizzes first, then divide by 3
+        var q1 = Number(row.querySelector(".q1").value);
+        var q2 = Number(row.querySelector(".q2").value);
+        var q3 = Number(row.querySelector(".q3").value);
+        var quizSum = q1 + q2 + q3;
+        var totalQuizPercentage = (quizSum / 30) * 100;
+
+        // 2. Performance Tasks: Add all 4 PTs first, then divide by 4
+        var pt1 = Number(row.querySelector(".pt1").value);
+        var pt2 = Number(row.querySelector(".pt2").value);
+        var pt3 = Number(row.querySelector(".pt3").value);
+        var pt4 = Number(row.querySelector(".pt4").value);
+        var ptSum = pt1 + pt2 + pt3 + pt4;
+        var ptTotalPercentage = (ptSum / 200) * 100;
+
+        // 3. Convert Attendanc
