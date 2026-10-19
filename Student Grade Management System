@@ -133,4 +133,86 @@
         var ptSum = pt1 + pt2 + pt3 + pt4;
         var ptTotalPercentage = (ptSum / 200) * 100;
 
-        // 3. Convert Attendanc
+        // 3. Convert Attendance and Final Exam to percentages
+        var attendancePercentage = (Number(row.querySelector(".attendance").value) / 30) * 100;
+        var finalExamPercentage = (Number(row.querySelector(".final-exam").value) / 40) * 100;
+
+        // 4. Final Grade = (Total Quiz % + PT Total % + Attendance % + Final Exam %) / 4
+        var finalGrade = (totalQuizPercentage + ptTotalPercentage + attendancePercentage + finalExamPercentage) / 4;
+
+        // 5. Update UI
+        row.querySelector(".total-quiz").innerText = totalQuizPercentage.toFixed(2) + "%";
+        row.querySelector(".pt-total").innerText = ptTotalPercentage.toFixed(2) + "%";
+        row.querySelector(".final-grade").innerText = finalGrade.toFixed(2) + "%";
+      });
+
+      saveToLocalStorage();
+    }
+
+    // --- LOCAL STORAGE FUNCTIONS ---
+
+    function saveToLocalStorage() {
+      var studentsData = [];
+      var rows = document.querySelectorAll("#studentTableBody tr");
+
+      rows.forEach(function(row) {
+        var student = {
+          name: row.querySelector(".student-name").value,
+          q1: row.querySelector(".q1").value,
+          q2: row.querySelector(".q2").value,
+          q3: row.querySelector(".q3").value,
+          totalQuiz: row.querySelector(".total-quiz").innerText,
+          pt1: row.querySelector(".pt1").value,
+          pt2: row.querySelector(".pt2").value,
+          pt3: row.querySelector(".pt3").value,
+          pt4: row.querySelector(".pt4").value,
+          ptTotal: row.querySelector(".pt-total").innerText,
+          attendance: row.querySelector(".attendance").value,
+          finalExam: row.querySelector(".final-exam").value,
+          finalGrade: row.querySelector(".final-grade").innerText
+        };
+        studentsData.push(student);
+      });
+
+      localStorage.setItem("gradeSpreadsheetData", JSON.stringify(studentsData));
+      showStatus("Data saved automatically to LocalStorage.");
+    }
+
+    function loadFromLocalStorage() {
+      var savedData = localStorage.getItem("gradeSpreadsheetData");
+      var tbody = document.getElementById("studentTableBody");
+      tbody.innerHTML = ""; // Clear default content
+
+      if (savedData && JSON.parse(savedData).length > 0) {
+        var studentsData = JSON.parse(savedData);
+        studentsData.forEach(function(student) {
+          addStudentRow(student);
+        });
+        showStatus("Saved data loaded from LocalStorage.");
+      } else {
+        // If no data saved, add 1 default empty row
+        addStudentRow();
+      }
+    }
+
+    function clearLocalStorage() {
+      if (confirm("Are you sure you want to clear all saved data?")) {
+        localStorage.removeItem("gradeSpreadsheetData");
+        var tbody = document.getElementById("studentTableBody");
+        tbody.innerHTML = "";
+        addStudentRow();
+        showStatus("Saved data cleared.");
+      }
+    }
+
+    function showStatus(message) {
+      var statusMsg = document.getElementById("statusMsg");
+      statusMsg.innerText = message;
+      setTimeout(function() {
+        statusMsg.innerText = "";
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>
